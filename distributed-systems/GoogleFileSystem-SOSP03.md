@@ -62,5 +62,14 @@ Both chunkserver and client don't use cache. They depend on Linux internal cache
 
 #### 2.4 Single Master
 
+Single master:
+
+1. simplify the design
+2. enable the master to make sophisticated chunk placement and replication decisions using global knowledge.
+
+We must minimize its involvement in reads and writes so that it does not become a bottleneck.
+
+Typical communication process: Master first, chunkserver second.
+
 
 
