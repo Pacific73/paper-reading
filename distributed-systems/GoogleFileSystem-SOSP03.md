@@ -71,5 +71,91 @@ We must minimize its involvement in reads and writes so that it does not become 
 
 Typical communication process: Master first, chunkserver second.
 
+#### 2.5 Chunk Size
 
+64MB.
+
+Advantages:
+
+1. reduce clients' need to interact with the master.
+2. client is more likely to perform multiple operations on one given chunk, hence reducing network overhead by keeping a persistent TCP connection.
+3. reduce the metadata size on master
+
+Disadvantages:
+
+1. small files may become hot spot
+
+Solution:
+
+1. stagger application start times
+2. increase replicas
+3. client can read from other clients
+
+#### 2.6 Metadata
+
+All in memory.
+
+1. File & chunk namespace
+2. mapping form files to chunks
+3. replica location
+
+1 and 2 are persisited to local logs and replicated.
+
+3: get it in real time
+
+##### 2.6.1 In-Memory Data Structure
+
+Since in memory, periodically scanning is used to implement GC, re-replication in the presence of chunkserver failures and chunk migration to blance load and disk space usage across chunkservers.
+
+But limited to memory size. But it's ok.
+
+##### 2.6.2 Chunk location
+
+Master get these information by using heartbeat.
+
+Advantage: avoid synchronization problem.
+
+Insight: chunkserver owns the file.
+
+##### 2.6.3 Operation log
+
+1. Persist metadata
+2. Define the order of concurrent operations
+
+Master has replicas. Once we store data in both remote end and local, we reply.
+
+Batch processing.
+
+Checkpoints
+
+#### 2.7 Consistency model
+
+Relaxed consistency.
+
+Concepts:
+
+1. Consistent
+2. Defined
+
+Data mutations:
+
+1. writes
+2. record append (atomically at least once) (may cause padding or duplicates)
+
+GFS achieves file defined by
+
+1. applying operation in the same order as other replicas
+2. using chunk version numbers
+
+Periodically check the data integrity by checksumming.
+
+Client will take care of padding and fragment made by concurrent appending. But may not handle duplicates.
+
+### 3 System Interactions
+
+#### 3.1 Leases and mutation order
+
+lease points out the primary chunkserver.
+
+...
 
